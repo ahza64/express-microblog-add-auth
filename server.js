@@ -2,6 +2,24 @@
 var express = require('express'),
     app = express(),
     bodyParser = require('body-parser');
+    cookieParser = require('cookie-parser'),
+    session = require('express-session'),
+    passport = require('passport'),
+    LocalStrategy = require('passport-local').Strategy;
+    // middleware for auth
+app.use(cookieParser());
+app.use(session({
+  secret: 'supersecretkey', // change this!
+  resave: false,
+  saveUninitialized: false
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+
+// passport config
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 
 // configure bodyParser (for receiving form data)
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -14,8 +32,8 @@ app.set('view engine', 'hbs');
 
 // require Post model
 var db = require('./models'),
-    Post = db.Post;
-
+    Post = db.Post,
+    User = db.User;
 
 // HOMEPAGE ROUTE
 
