@@ -37,14 +37,53 @@ app.use(express.static(__dirname + '/public'));
 app.set('view engine', 'hbs');
 
 
-// HOMEPAGE ROUTE
+// Html ROUTE/endpoints
 
 app.get('/', function (req, res) {
-  res.render('index');
+  res.render('index', {user: JSON.stringify(req.user)});
+});
+
+app.get('/signup', function (req, res) {
+  res.render('signup'); // you can also use res.sendFile
 });
 
 
-// API ROUTES
+// JSON API endpoints/ROUTES
+
+// AUTH ROUTES
+
+// sign up new user, then log them in
+// hashes and salts password, saves new user to db
+app.post('/signup', function (req, res) {
+  var new_user = new User({ username: req.body.username });
+  User.register(new_user, req.body.password,
+    function (err, newUser) {
+      passport.authenticate('local')(req, res, function() {
+        res.redirect('/');
+      });
+    }
+  );
+});
+
+// show login view
+app.get('/login', function (req, res) {
+  res.redirect('/'); // you can also use res.sendFile
+});
+
+// log in user
+app.post('/login', passport.authenticate('local'), function (req, res) {
+  console.log(JSON.sringify(req.user));
+  res.send('logged in!!!');
+  res.redirect('/');
+});
+
+// log out user
+app.get('/logout', function (req, res) {
+  console.log("BEFORE logout", req.user);
+  req.logout();
+  console.log("AFTER logout", req.user);
+  res.redirect('/');
+});
 
 // get all posts
 app.get('/api/posts', function (req, res) {
@@ -60,17 +99,22 @@ app.get('/api/posts', function (req, res) {
 
 // create new post
 app.post('/api/posts', function (req, res) {
+    if (req.user.username === "as") {
+
   // create new post with form data (`req.body`)
   var newPost = new Post(req.body);
 
   // save new post in db
   newPost.save(function (err, savedPost) {
     if (err) {
-      res.status(500).json({ error: err.message });
+          res.status(500).json({ error: err.message });
+        } else {
+          res.json(savedPost);
+        }
+      });
     } else {
-      res.json(savedPost);
+      res.status(401).send({error: "Not Authorized! Please login first."});
     }
-  });
 });
 
 // get one post
