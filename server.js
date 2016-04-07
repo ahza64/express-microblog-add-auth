@@ -6,6 +6,12 @@ var express = require('express'),
     session = require('express-session'),
     passport = require('passport'),
     LocalStrategy = require('passport-local').Strategy;
+
+    // require Post model
+    var db = require('./models'),
+    Post = db.Post,
+    User = db.User;
+
     // middleware for auth
 app.use(cookieParser());
 app.use(session({
@@ -30,10 +36,6 @@ app.use(express.static(__dirname + '/public'));
 // set view engine to hbs (handlebars)
 app.set('view engine', 'hbs');
 
-// require Post model
-var db = require('./models'),
-    Post = db.Post,
-    User = db.User;
 
 // HOMEPAGE ROUTE
 
